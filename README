@@ -1,0 +1,57 @@
+# Suguru Solver
+
+
+## Puzzle Structure
+
+Grid
+    - a 2x2 list of the cells
+
+Row
+    - is returned when the Grid is indexed
+
+Cell
+    - is returned when the Row is indexed
+    - contains a list of potential values
+
+Group
+    - stores the indexes of the cells in its group
+    - is the main area of processing for the solver
+
+## Solver
+
+Phase 1: adjacent cell exclusion
+    - for each filled cell, remove that value from all adjacent cells
+
+Phase 2: group exclusion
+    - for each filled cell in the group, remove that value from all the cells
+    in the group
+
+Phase 3: group multi-cell exclusion
+    - find all the empty cells in the group
+    - check if they all have at least one overlapping cell in their regions
+    of influence (if not skip this phase)
+    - for each possible remaining values in the group, check if the cells
+    containing those values have an overlapping cell
+    - remove that value from this cell
+
+
+Optimisations?
+    - have a buffer of changed cells (and groups) so we dont have to check
+    every cell again individually
+
+
+Baby solver ideas:
+    - find largest group size, then fill every cell with a number smaller than
+    that, then check the grid
+    - get every permutation of values in each group and go through all of them
+    then check the grid
+
+
+## GUI suguru input
+
+User steps:
+    - select size of grid
+    - create groups
+        - click and drag on a series of cells and 
+    - input cell values
+    - hit 'solve'
