@@ -2,18 +2,19 @@
 from collections.abc import MutableSequence
 
 class Cell:
-    def __init__(self, row, column):
+    def __init__(self):
         """
         Docstring for __init__
-        
-        :param row: the row location of the cell
-        :param column: the column location of the cell
         """
-        self.row = row
-        self.col = column
+
         # Minus one means is hasnt been assigned a group yet
         self.possible_values = [-1]
-        self.empty = False
+        self.empty = True
+    
+    
+    def __str__(self):
+        return str(self.get_value()) if not self.is_empty() else str(
+            list(self.get_possible_values()))
     
     def set_possible_values(self, n:int):
         """
@@ -49,6 +50,12 @@ class Cell:
         self.empty = False
     
     
+    def get_value(self):
+        if self.empty or self.possible_values == [-1]:
+            return None
+        return self.possible_values[0]
+    
+    
     def is_empty(self):
         return self.empty
 
@@ -60,6 +67,9 @@ class Row(MutableSequence):
             self.row = list(row)
         else:
             self.row = []
+    
+    def __str__(self):
+         return " | ".join([cell.__str__() for cell in self.row])
     
     def __iter__(self):
         return self.row.__iter__()
@@ -128,7 +138,7 @@ class Grid:
         :param columns: the number of columns
         """
         self.grid = [Row(
-            [Cell(r, c) for c in range(columns)]
+            [Cell() for c in range(columns)]
             ) for r in range(rows)]
         self.rows = rows
         self.cols = columns
@@ -164,41 +174,63 @@ class Grid:
         
         
 class Group:
-    def __init__(self, cells:list[tuple]):
+    def __init__(self, cells:list[tuple], grid:Grid):
         self.cells = cells
+        self.grid = grid
+        for cell in cells:
+            grid[cell].set_possible_values(len(cells))
     
     def __iter__(self):
         return self.cells.__iter__()
     
-    def get_empty_cells(self, grid:Grid)->list[tuple[int, int]]:
+    def __str__(self):
+        return str([self.grid[cell] .__str__() for cell in self.cells])
+    
+    def get_empty_cells(self)->list[tuple[int, int]]:
         empty_cells = []
         for cell in self.cells:
-            if grid[cell].is_empty():
+            if self.grid[cell].is_empty():
                 empty_cells.append(cell)
         
         return empty_cells
+    
+    def get_filled_cells_values(self)->set[int]:
+        # print("getting filled cells values")
+        filled_cells = set()
+        for cell in self.cells:
+            if not self.grid[cell].is_empty():
+                filled_cells.add(self.grid[cell].get_value())
+            
+        return filled_cells
 
-    def get_overlapping_roi_cells(self, grid:Grid, cells:list[tuple[int, int]]):
-        overlap = set(grid.get_cell_roi(cells[0]))
-        print(overlap)
+    def get_overlapping_roi_cells(self, cells:list[tuple[int, int]]):
+        if not cells:
+            return set()
+        overlap = set(self.grid.get_cell_roi(cells[0]))
         for cell in cells[1:]:
-            print(set(grid.get_cell_roi(cell)))
-            overlap = overlap.intersection(set(grid.get_cell_roi(cell)))
-            print(overlap)
+            overlap = overlap.intersection(set(self.grid.get_cell_roi(cell)))
         return overlap
 
 
 class Suguru:
     def __init__(self, rows, columns):
         self.grid = Grid(rows=rows, columns=columns)
-        self.groups = []
+        self.groups:list[Group] = []
+    
+    def __str__(self):
+        string = ""
+        for row in self.grid:
+            string += row.__str__() + "\n"
+        
+        return string
+    
     
     def set_groups(self, groups:list[Group]|list[list[tuple[int, int]]]):
         if isinstance(groups, list):
             if isinstance(groups[0], Group):
                 self.groups = groups
             elif isinstance(groups[0], list):
-                self.groups = [Group(group) for group in groups]
+                self.groups = [Group(group, grid=self.grid) for group in groups]
     
     
     def get_groups(self):
@@ -226,53 +258,31 @@ class Suguru:
             return True
         
         return False
-    
-
-
-# check groups
-# groups = [Group([2, 4, 6]), Group([1, 8, 6])]
-# s = set()
-# for group in groups:
-#     s = s.union(set(group))
-
-
-
-# # check 'check_valid_grouping'
-# s = Suguru(3, 3)
-# gs = [Group([(0, 0), (0, 1), (0, 2)]), Group([(1, 1), (1, 2), (2, 0), (2, 1), (2, 2)])]
-
-# s.set_groups(gs)
-# print(s.check_valid_grouping())
-
-# g = Grid(4, 2)
-# print(g)
-# print(g[(2, 1)])
-
-
-# Example suguru
 
 
 gs = [
-    Group([(0, 0), (0, 1), (1, 1), (1, 2), (2, 1), (2, 2)]),
-    Group([(1, 0), (2, 0)]),
-    Group([(0, 2), (0, 3), (1, 3), (2, 3), (3, 3), (3, 2)]),
-    Group([(3, 0), (3, 1), (4, 0), (4, 1)]),
-    Group([(4, 2), (4, 3)])
+    [(0, 0), (0, 1), (1, 1), (1, 2), (2, 1), (2, 2)],
+    [(1, 0), (2, 0)],
+    [(0, 2), (0, 3), (1, 3), (2, 3), (3, 3), (3, 2)],
+    [(3, 0), (3, 1), (4, 0), (4, 1)],
+    [(4, 2), (4, 3)],
 ]
 
-# (0, 1) = 1
-# (1, 1) = 4
-# (2, 1) = 5
-# (1, 2) = 3
-# (0, 3) = 2
-# (1, 3) = 6
-# (3, 0) = 3
-# (4, 1) = 1
-# (3, 2) = 3
-
+pre_filled = {
+    (0, 1): 1,
+    (1, 1): 4,
+    (2, 1): 5,
+    (1, 2): 3,
+    (0, 3): 2,
+    (1, 3): 6,
+    (3, 0): 3,
+    (4, 1): 1,
+    (3, 2): 3,
+}
 
 suguru = Suguru(5, 4)
 suguru.set_groups(gs)
-print("=", gs[1].get_overlapping_roi_cells(suguru.grid, gs[1].cells))
 
-print(suguru.check_valid_grouping())
+for key, value in pre_filled.items():
+    suguru.grid[key].set_value(value)
+
