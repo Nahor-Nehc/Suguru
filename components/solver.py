@@ -148,7 +148,8 @@ def test1():
     #     (3, 2): 3,
     # }
 
-    # suguru = Suguru(5, 4)
+    # suguru = Suguru()
+    # suguru.init(5, 4)
     # suguru.set_groups(gs)
 
     # for key, value in pre_filled.items():
@@ -165,7 +166,8 @@ def test1():
 
 
 def test2():
-    s = Suguru(9, 7)
+    s = Suguru()
+    s.init(9, 7)
 
     # list of groups (each group = list of (row, col) cells)
     groups = [

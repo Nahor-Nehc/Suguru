@@ -1,8 +1,8 @@
 
 
 class State:
-    def __init__(self, displaying:str,):
-        self.displaying = displaying
+    def __init__(self, state:str,):
+        self.state = state
         self.data = dict()
         
     def __getitem__(self, i):
@@ -19,9 +19,19 @@ class State:
             raise ValueError(
                 key, "is not in the list of data stored:", self.data.keys())
     
+    def __eq__(self, s:str):
+        return self.state == s
+            
+    
     def create_data_keys(self, *keys):
         for key in keys:
             self.data.update({key: None})
     
     def get_data(self):
         return self.data
+    
+    def set(self, state, keep_data = False):
+        self.state = state
+        if not keep_data:
+            self.data = dict()
+        

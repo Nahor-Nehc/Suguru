@@ -245,11 +245,18 @@ class Group:
 
 
 class Suguru:
-    def __init__(self, rows, columns):
+    def __init__(self):
+        self.initialised = False
+    
+    def init(self, rows, columns):
+        self.initialised = True
         self.grid = Grid(rows=rows, columns=columns)
         self.groups:list[Group] = []
     
     def __str__(self):
+        if not self.initialised:
+            raise RuntimeError("This suguru is not yet initialised")
+        
         string = ""
         for row in self.grid:
             string += row.__str__() + "\n"
@@ -258,6 +265,9 @@ class Suguru:
     
     
     def set_groups(self, groups:list[Group]|list[list[tuple[int, int]]]):
+        if not self.initialised:
+            raise RuntimeError("This suguru is not yet initialised")
+        
         if isinstance(groups, list):
             if isinstance(groups[0], Group):
                 self.groups = groups
@@ -266,10 +276,16 @@ class Suguru:
     
     
     def get_groups(self):
+        if not self.initialised:
+            raise RuntimeError("This suguru is not yet initialised")
+        
         return self.groups
 
 
     def add_group(self, group:Group):
+        if not self.initialised:
+            raise RuntimeError("This suguru is not yet initialised")
+        
         if isinstance(group, Group):
             self.groups.append(group)
         elif isinstance(group, list):
@@ -280,6 +296,9 @@ class Suguru:
         
         
     def check_valid_grouping(self):
+        if not self.initialised:
+            raise RuntimeError("This suguru is not yet initialised")
+        
         g = set([(r,c) for c in range(self.grid.cols) for r in range(self.grid.rows)])
         
         s = set()
@@ -292,32 +311,10 @@ class Suguru:
         return False
     
     def set_initial_values(self, initial_values):
+        if not self.initialised:
+            raise RuntimeError("This suguru is not yet initialised")
+        
         for key, value in initial_values.items():
             self.grid[key].set_value(value)
-
-
-gs = [
-    [(0, 0), (0, 1), (1, 1), (1, 2), (2, 1), (2, 2)],
-    [(1, 0), (2, 0)],
-    [(0, 2), (0, 3), (1, 3), (2, 3), (3, 3), (3, 2)],
-    [(3, 0), (3, 1), (4, 0), (4, 1)],
-    [(4, 2), (4, 3)],
-]
-
-pre_filled = {
-    (0, 1): 1,
-    (1, 1): 4,
-    (2, 1): 5,
-    (1, 2): 3,
-    (0, 3): 2,
-    (1, 3): 6,
-    (3, 0): 3,
-    (4, 1): 1,
-    (3, 2): 3,
-}
-
-suguru = Suguru(5, 4)
-suguru.set_groups(gs)
-
-for key, value in pre_filled.items():
-    suguru.grid[key].set_value(value)
+    
+    
