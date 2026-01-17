@@ -7,14 +7,20 @@ class Cell:
         Docstring for __init__
         """
 
+        self.reset()
+    
+    
+    def reset(self):
         # Minus one means is hasnt been assigned a group yet
         self.possible_values = [-1]
         self.empty = True
     
-    
     def __str__(self):
-        return str(self.get_value()) if not self.is_empty() else str(
-            list(self.get_possible_values()))
+        simple = True
+        e = " "
+        if not simple:
+            e = str(list(self.get_possible_values()))
+        return str(self.get_value()) if not self.is_empty() else e
     
     def set_possible_values(self, n:int):
         """
@@ -43,6 +49,10 @@ class Cell:
         
         if len(self.possible_values) == 1 and self.possible_values[0] != -1:
             self.set_value(self.possible_values[0])
+            
+    
+    def could_be(self, value):
+        return True if value in self.possible_values else False
         
     
     def set_value(self, value):
@@ -165,11 +175,13 @@ class Grid:
         
         return three_by_three
     
-    def __getitem__(self, i):
+    def __getitem__(self, i)->Cell|Row:
         if isinstance(i, tuple) and len(i) == 2:
             if isinstance(i[0], int) and isinstance(i[1], int):
                 return self.grid[i[0]][i[1]]
         else:
+            # if i >= self.rows:
+            #     raise ValueError(i, "is out of range")
             return self.grid[i]
         
         
@@ -186,6 +198,9 @@ class Group:
     def __str__(self):
         return str([self.grid[cell] .__str__() for cell in self.cells])
     
+    def __contains__(self, value):
+        return self.cells.__contains__(value)
+    
     def get_empty_cells(self)->list[tuple[int, int]]:
         empty_cells = []
         for cell in self.cells:
@@ -196,12 +211,23 @@ class Group:
     
     def get_filled_cells_values(self)->set[int]:
         # print("getting filled cells values")
-        filled_cells = set()
+        filled_cells_values = set()
         for cell in self.cells:
             if not self.grid[cell].is_empty():
-                filled_cells.add(self.grid[cell].get_value())
+                filled_cells_values.add(self.grid[cell].get_value())
             
-        return filled_cells
+        return filled_cells_values
+
+    
+    def get_possible_values_of_empty_cells(self)->set[int]:
+        possible_values = set()
+        for cell in self.cells:
+            if self.grid[cell].is_empty():
+                possible_values = possible_values.union(
+                    set(self.grid[cell].get_possible_values()))
+        
+        return possible_values
+        
 
     def get_overlapping_roi_cells(self, cells:list[tuple[int, int]]):
         if not cells:
@@ -210,6 +236,12 @@ class Group:
         for cell in cells[1:]:
             overlap = overlap.intersection(set(self.grid.get_cell_roi(cell)))
         return overlap
+
+    def delete(self):
+        for cell in self.cells:
+            self.grid[cell].reset()
+        self.cells = None
+        self.grid = None
 
 
 class Suguru:
@@ -258,6 +290,10 @@ class Suguru:
             return True
         
         return False
+    
+    def set_initial_values(self, initial_values):
+        for key, value in initial_values.items():
+            self.grid[key].set_value(value)
 
 
 gs = [
@@ -285,4 +321,3 @@ suguru.set_groups(gs)
 
 for key, value in pre_filled.items():
     suguru.grid[key].set_value(value)
-

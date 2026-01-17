@@ -47,11 +47,36 @@ Baby solver ideas:
     then check the grid
 
 
-## GUI suguru input
+## GUI
+### GUI suguru input
 
 User steps:
     - select size of grid
     - create groups
-        - click and drag on a series of cells and 
-    - input cell values
+        - click and drag on a series of cells (use is mousedown thing on mousemove)
+        - if you click on a cell already assigned a group, delete previous group
+    - click on a cell to input cell values (use mouseup event only if not dragging)
+
     - hit 'solve'
+        - show if there are some cells not in a group
+
+
+### Things to display
+
+- button to change size of grid
+    - text input as well?
+
+CHANGE SCREEN to editor
+- show suguru grid
+- THICK green lines to show currently selected cells
+- thick black lines to show created groups
+-  keep track of:
+    - 
+
+
+### Things to track
+
+- size_selector
+
+- editor
+    
