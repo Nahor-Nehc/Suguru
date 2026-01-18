@@ -68,6 +68,13 @@ class Cell:
     
     def is_empty(self):
         return self.empty
+    
+    
+    def is_assigned(self):
+        if self.possible_values == [-1]:
+            return False
+        
+        return True
 
 
 class Row(MutableSequence):
@@ -227,7 +234,7 @@ class Group:
                     set(self.grid[cell].get_possible_values()))
         
         return possible_values
-        
+    
 
     def get_overlapping_roi_cells(self, cells:list[tuple[int, int]]):
         if not cells:
@@ -282,7 +289,7 @@ class Suguru:
         return self.groups
 
 
-    def add_group(self, group:Group):
+    def add_group(self, group:Group|list):
         if not self.initialised:
             raise RuntimeError("This suguru is not yet initialised")
         
@@ -290,10 +297,12 @@ class Suguru:
             self.groups.append(group)
         elif isinstance(group, list):
             if sum([1-int(isinstance(x, int)) for x in range(0, len(group))])==0:
-                self.groups.append(Group(group))
+                self.groups.append(Group(group, self.grid))
         else:
             raise ValueError("group should be type Group not " + type(group))
         
+    def remove_group(self, group:Group):
+        self.groups.remove(group)
         
     def check_valid_grouping(self):
         if not self.initialised:
@@ -316,5 +325,25 @@ class Suguru:
         
         for key, value in initial_values.items():
             self.grid[key].set_value(value)
-    
-    
+            
+    def check_cell_in_group(self, cell):
+        if not self.initialised:
+            raise RuntimeError("This suguru is not yet initialised")
+        
+        for group in self.groups:
+            for c in group:
+                if c == cell:
+                    return True
+                
+        return False
+
+    def get_cell_group(self, cell):
+        if not self.initialised:
+            raise RuntimeError("This suguru is not yet initialised")
+        
+        for group in self.groups:
+            for c in group:
+                if c == cell:
+                    return group
+                
+        raise ValueError("This cell", cell, "is not in a group")
