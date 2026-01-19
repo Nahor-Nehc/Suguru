@@ -58,10 +58,9 @@ def draw_suguru_grid(win, state, side_length):
         pygame.draw.line(surface=win, color=BLACK,
                             start_pos=(left + side_length*(c+1), top),
                             end_pos=(left + side_length*(c+1), bottom))
-    
 
 
-def draw(win, state:State, suguru:Suguru):
+def draw(win:pygame.Surface, state:State, suguru:Suguru):
     base = pygame.Surface((WIDTH, HEIGHT))
     base.fill(WHITE)
     win.blit(base)
@@ -88,7 +87,6 @@ def draw(win, state:State, suguru:Suguru):
 
     elif state == "editor":
         
-        
         # dividing line
         
         pygame.draw.line(surface=win, color=GREY,
@@ -104,13 +102,7 @@ def draw(win, state:State, suguru:Suguru):
         for cell in unassigned:
             pygame.draw.rect(surface=win, color=GREY,
                              rect = state["cell_locations"][cell])
-        
-        
-        # for row in range(suguru.grid.rows):
-        #     for col in range(suguru.grid.cols):
-        #         if not suguru.grid[(row, col)].is_assigned():
-        #             pygame.draw.rect(surface=win, color=GREY,
-        #                              rect = state["cell_locations"][(row, col)])
+
         
         draw_suguru_grid(win, state, state["side_length"])
         
@@ -130,7 +122,28 @@ def draw(win, state:State, suguru:Suguru):
                 pygame.draw.line(surface=win, color=GREEN,
                                  start_pos=line[0], end_pos=line[1],
                                  width=THICK_GROUP_LINE_THICKNESS)
+                
+        # numbers
         
+        for cell, value in state["initial_values"].items():
+            tl = state["cell_locations"][cell].topleft
+            location = (tl[0]+NUMBER_PADDING, tl[1]+NUMBER_PADDING)
+            win.blit(state["number_images"][value],location)
+
+        if state["solver"] is not None:
+            for cell in [(r, c) for r in range(suguru.grid.rows) for c in range(suguru.grid.cols)]:
+                tl = state["cell_locations"][cell].topleft
+                value = state["solver"].suguru.grid[cell].get_value()
+                if value is None:
+                    pass
+                else:
+                    location = (tl[0]+NUMBER_PADDING, tl[1]+NUMBER_PADDING)
+                    win.blit(state["number_images"][value],location)
+        
+        if state["input_cell_location"] is not None:
+            pygame.draw.rect(surface=win, color=RED,
+                             rect=state["cell_locations"][state["input_cell_location"]],
+                             width=2)
 
 def get_group_borders(state, cells:list[tuple[int, int]], include_edges:bool=False):
     cell_to_location = state["cell_locations"]
@@ -179,6 +192,16 @@ def get_group_borders(state, cells:list[tuple[int, int]], include_edges:bool=Fal
     return lines
 
 
+def out_of_mouse_tolerance(initial_mouse:tuple[int, int], mouse:tuple[int, int],state):
+    leeway = state["side_length"]/5
+    if abs(initial_mouse[0] - mouse[0]) <= leeway and\
+        abs(initial_mouse[1] - mouse[1]) <= leeway:
+        return False
+    
+    return True
+    
+
+
 def handle_events(state:State, suguru:Suguru, events:list[pygame.Event]):
     for event in events:
         if event.type == pygame.QUIT:
@@ -207,13 +230,17 @@ def handle_events(state:State, suguru:Suguru, events:list[pygame.Event]):
                     side_length = state["side_length"]
                     state.set("editor", keep_data=True)
                     state.create_data_keys(
-                        "side_length", "cell_locations", "current_group",
-                        "input_cell_value", "input_cell_location",
-                        "initial_values")
-                    state["side_length"] = side_length
+                        "initial_mouse_down",
+                        "cell_locations", "current_group", "input_cell_location",
+                        "initial_values", "number_images", "solver")
                     state["cell_locations"] = suguru_location_helper(
                         state=state, suguru=suguru, side_length=side_length)
                     state["initial_values"] = dict()
+                    size = (side_length-NUMBER_PADDING*2,side_length-NUMBER_PADDING*2)
+                    state["number_images"] = [
+                        pygame.image.load_sized_svg(
+                            os.path.join("assets", "numbers", f"{x}.svg"),
+                        size=size) for x in range(0, 10)]
                     
                 elif event.key == pygame.K_r:
                     state["n_cols"] = 5
@@ -221,24 +248,34 @@ def handle_events(state:State, suguru:Suguru, events:list[pygame.Event]):
 
         elif state == "editor":
             
-            if event.type == pygame.MOUSEMOTION and pygame.mouse.get_pressed(3)[0]:
-                for cell, rect in state["cell_locations"].items():
-                    if rect.collidepoint(*pygame.mouse.get_pos()):
-                        if suguru.check_cell_in_group(cell):
-                            group = suguru.get_cell_group(cell)
-                            group.delete()
-                            suguru.remove_group(group)
-                        else:
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                state["initial_mouse_down"] = pygame.mouse.get_pos()
+            
+            elif event.type == pygame.MOUSEMOTION and pygame.mouse.get_pressed(3)[0]:
+                if state["initial_mouse_down"] is None:
+                    state["initial_mouse_down"] = pygame.mouse.get_pos()
+                    
+                out_of_tolerance = out_of_mouse_tolerance(
+                    state["initial_mouse_down"], pygame.mouse.get_pos(), state)
+                if out_of_tolerance or state["current_group"] is not None:
+                    for cell, rect in state["cell_locations"].items():
+                        if rect.collidepoint(*pygame.mouse.get_pos()):
+                            if suguru.check_cell_in_group(cell):
+                                group = suguru.get_cell_group(cell)
+                                group.delete()
+                                suguru.remove_group(group)
+
                             if state["current_group"] is None:
                                 state["current_group"] = [cell]
                             elif cell not in state["current_group"]:
                                 state["current_group"] += [cell]
+                            
+                            input_cell_value(suguru, state)
             
             elif event.type == pygame.MOUSEBUTTONUP:
                 if state["current_group"] is not None:
                     suguru.add_group(state["current_group"])
                     state["current_group"] = None
-                    input_cell_value(suguru, state)
                 
                 else:
                     print(state["cell_locations"])
@@ -246,27 +283,30 @@ def handle_events(state:State, suguru:Suguru, events:list[pygame.Event]):
                         if location.collidepoint(*pygame.mouse.get_pos()):
                             state["input_cell_location"] = cell
                             break
-                    state["input_cell_value"] = ""
-            
+                
+                # to ensure that quickly releasing and pressing doesnt throw an error
+                state["initial_mouse_down"] = None
+                input_cell_value(suguru, state)
             
             elif event.type == pygame.KEYDOWN:
                 if event.key in range(pygame.K_0, pygame.K_9+1):
-                    if state["input_cell_value"] is not None:
-                        state["input_cell_value"] += str(event.key-48)
+                    if state["input_cell_location"] is not None:
+                        number = str(event.key-48)
+                        iv = {state["input_cell_location"]:int(number)}
+                        state["initial_values"].update(iv)
+                        state["input_cell_location"] = None
+                        input_cell_value(suguru, state)
                 
                 elif event.key == pygame.K_RETURN:
-                    if state["input_cell_value"] is not None:
-                        iv = {state["input_cell_location"]:int(state["input_cell_value"])}
-                        state["initial_values"].update(iv)
-                        state["input_cell_value"] = None
-                        state["input_cell_location"] = None
-                        print(state["initial_values"])
-                        input_cell_value(suguru, state)
-                        print(suguru)
+                    solver = Solver(suguru=suguru, initial_values=state["initial_values"])
+                    state["solver"] = solver
+                    solver.solve()
 
 
-def input_cell_value(suguru, state):
-    suguru.set_initial_values(state["initial_values"])
+def input_cell_value(suguru:Suguru, state):
+    invalid = suguru.set_initial_values(state["initial_values"])
+    for item in invalid:
+        state["initial_values"].pop(item)
 
 
 def main():

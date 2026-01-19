@@ -69,7 +69,6 @@ class Solver:
                 if not self.suguru.grid[ec].is_empty():
                     
                     newly_filled_cells.add(ec)
-                    print("phase2", ec, "with value", self.suguru.grid[ec])
         
         return newly_filled_cells
     
@@ -93,7 +92,6 @@ class Solver:
                             self.suguru.grid[ic].remove_possible_values(value)
                             if not self.suguru.grid[ic].is_empty():
                                 newly_filled_cells.add(ic)
-                                print("phase3", ic, "with value", self.suguru.grid[ic])
         return newly_filled_cells        
     
     
@@ -115,15 +113,12 @@ class Solver:
         
         newly_filled_cells.union(newly_filled_cells_phase2)
             
-        print("before phase 3")
         print(self.suguru)
         # Phase 3
         newly_filled_cells = newly_filled_cells.union(self.group_multi_cell_exclusion())
 
-        print("after phase 3")
         print(self.suguru)
 
-        print("="*60)
         return newly_filled_cells
 
 

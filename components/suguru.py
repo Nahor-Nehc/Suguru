@@ -322,9 +322,21 @@ class Suguru:
     def set_initial_values(self, initial_values):
         if not self.initialised:
             raise RuntimeError("This suguru is not yet initialised")
+        print()
+        invalid = []
         
         for key, value in initial_values.items():
-            self.grid[key].set_value(value)
+            print(self.grid[key].get_possible_values())
+            if value in self.grid[key].get_possible_values():
+                self.grid[key].set_value(value)
+            elif [-1] == self.grid[key].get_possible_values():
+                pass
+            else:
+                invalid.append(key)
+        
+        print(invalid)
+        return invalid
+            
             
     def check_cell_in_group(self, cell):
         if not self.initialised:
