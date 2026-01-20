@@ -25,6 +25,7 @@ Phase 1: adjacent cell exclusion
 Phase 2: group exclusion
     - for each filled cell in the group, remove that value from all the cells
     in the group
+    - if only one cell in the group can take a value, it takes it
 
 Phase 3: group multi-cell exclusion
     - find all the empty cells in the group
@@ -33,6 +34,13 @@ Phase 3: group multi-cell exclusion
     - for each possible remaining values in the group, check if the cells
     containing those values have an overlapping cell
     - remove that value from this cell
+
+Trial and Error:
+    - sometimes the deterministic solver is unable to find a solution and we need to resort to a trial and error method
+    - we will fill in a value (one with minimal choice) then iterate through the previously described phases until it is either solved, incomplete, or paradoxical
+        - if it fails, we guess another cell
+        - if it creates a paradox, we forget the previous guess we made
+        
 
 
 Optimisations?

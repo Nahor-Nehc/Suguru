@@ -45,7 +45,7 @@ class Cell:
                 raise ValueError("values must be integers")
         
         if not self.possible_values:
-            raise ValueError("Tried to remove all possible values")
+            raise ValueError(f"Tried to remove all possible values. Values being removed: {values}")
         
         if len(self.possible_values) == 1 and self.possible_values[0] != -1:
             self.set_value(self.possible_values[0])
@@ -204,6 +204,8 @@ class Group:
     
     def __str__(self):
         return str([self.grid[cell] .__str__() for cell in self.cells])
+
+
     
     def __contains__(self, value):
         return self.cells.__contains__(value)
@@ -322,11 +324,9 @@ class Suguru:
     def set_initial_values(self, initial_values):
         if not self.initialised:
             raise RuntimeError("This suguru is not yet initialised")
-        print()
         invalid = []
         
         for key, value in initial_values.items():
-            print(self.grid[key].get_possible_values())
             if value in self.grid[key].get_possible_values():
                 self.grid[key].set_value(value)
             elif [-1] == self.grid[key].get_possible_values():
@@ -334,7 +334,6 @@ class Suguru:
             else:
                 invalid.append(key)
         
-        print(invalid)
         return invalid
             
             
