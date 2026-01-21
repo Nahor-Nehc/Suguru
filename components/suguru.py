@@ -167,6 +167,9 @@ class Grid:
             s+= row.__str__() + "\n"
         
         return s[:-1]
+    
+    def get_cell_coordinates(self):
+        return [(r, c) for r in range(self.rows) for c in range(self.cols)]
 
     
     def get_cell_roi(self, cell:tuple[int, int]):

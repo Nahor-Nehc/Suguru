@@ -96,7 +96,7 @@ def draw(win:pygame.Surface, state:State, suguru:Suguru):
                          end_pos=(GRID_SPACE_WIDTH, HEIGHT))
         
         # shade all the un-assigned cells
-        unassigned = [(r, c) for r in range(suguru.grid.rows) for c in range(suguru.grid.cols)]
+        unassigned = suguru.grid.get_cell_coordinates()
         for group in suguru.get_groups():
             for cell in group:
                 unassigned.remove(cell)
@@ -133,7 +133,7 @@ def draw(win:pygame.Surface, state:State, suguru:Suguru):
             win.blit(state["number_images"][value],location)
 
         if state["solver"] is not None:
-            for cell in [(r, c) for r in range(suguru.grid.rows) for c in range(suguru.grid.cols)]:
+            for cell in suguru.grid.get_cell_coordinates():
                 tl = state["cell_locations"][cell].topleft
                 value = state["solver"].suguru.grid[cell].get_value()
                 if value is None:
@@ -235,8 +235,7 @@ def handle_events(state:State, suguru:Suguru, events:list[pygame.Event]):
                     state.create_data_keys(
                         "initial_mouse_down",
                         "cell_locations", "current_group", "input_cell_location",
-                        "initial_values", "number_images", "solver",
-                        "temp")
+                        "initial_values", "number_images", "solver")
                     state["cell_locations"] = suguru_location_helper(
                         state=state, suguru=suguru, side_length=side_length)
                     state["initial_values"] = dict()
@@ -306,18 +305,15 @@ def handle_events(state:State, suguru:Suguru, events:list[pygame.Event]):
                     print(state["initial_values"])
                     solver = Solver(suguru=suguru, initial_values=state["initial_values"])
                     state["solver"] = solver
-                    state["temp"] = state["initial_values"]
-                    # solver.solve()
-                
-                elif event.key == pygame.K_SPACE:
-                    print("="*30)
-                    state["temp"]=state["solver"].solve_step(state["temp"])
-                
-                elif event.key == pygame.K_p:
-                    state["temp"] = set(
-                        [(r, c) for r in range(suguru.grid.rows) \
-                            for c in range(suguru.grid.cols)])
+                    solver.solve()
 
+                elif event.key == pygame.K_SPACE:
+                    print("="*60)
+                    for group in suguru.get_groups():
+                        print(group.cells)
+                    print(state["initial_values"])
+                    print("="*60)
+                    
 
 def input_cell_value(suguru:Suguru, state):
     invalid = suguru.set_initial_values(state["initial_values"])
