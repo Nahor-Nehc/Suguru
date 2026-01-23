@@ -37,14 +37,21 @@ class Solver:
 
     def ensure_groups(self):
         for group in self.suguru.get_groups():
-            should_contain = list(range(1, len(group.cells)+1))
             contains = [self.suguru.grid[cell].get_value() for cell in group.cells]
-        
+            for value in range(1, len(group.cells)+1):
+                if value not in contains:
+                    return False
+                else:
+                    contains.remove(value)
+                    
+            if contains:
+                return False
     
     def ensure_solved(self):
         filled = self.ensure_filled()
         neighbours = self.ensure_neighbours()
-        return filled and neighbours
+        groups = self.ensure_groups()
+        return filled and neighbours and groups
     
     def solve(self):
         checking = True
