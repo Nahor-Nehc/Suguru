@@ -4,7 +4,7 @@
 ## Puzzle Structure
 
 Grid
-    - a 2x2 list of the cells
+    - a 2d list of the cells
 
 Row
     - is returned when the Grid is indexed
@@ -21,6 +21,9 @@ Group
 
 The goal is to find the solution to a well defined suguru (a suguru with
 exactly one possible solution without the need for trial and error)
+
+The core is to remove possibilities for each cell until only one possible solution is left -- which is then by default assumed to be the value of the cell.
+If the solver attempts to remove that last possible value, then we can assume the suguru is not well defined (unsolvable)
 
 We solve it by doing the following phases
 
@@ -65,12 +68,18 @@ Baby solver ideas:
 User steps:
     - select size of grid
     - create groups
-        - click and drag on a series of cells (use is mousedown thing on mousemove)
+        - click and drag on a series of cells (use 'if mousedown' thing on mousemove event)
         - if you click on a cell already assigned a group, delete previous group
+    - create size buffer so you need to move the mouse a certain threshold before it registers that user is attempting to draw a group instead of inputting a cell value
     - click on a cell to input cell values (use mouseup event only if not dragging)
 
     - hit 'solve'
         - show if there are some cells not in a group
+        - mode to show solve one step at a time for learning purposes
+    
+    - save suguru boards (in unsolved state)
+
+    - load suguru boards
 
 
 ### Things to display
@@ -82,11 +91,9 @@ CHANGE SCREEN to editor
 - show suguru grid
 - THICK green lines to show currently selected cells
 - thick black lines to show created groups
--  keep track of:
-    - 
 
 
-### Things to track
+### Things to track internally
 
 - size_selector
 
