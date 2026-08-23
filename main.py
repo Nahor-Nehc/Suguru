@@ -10,7 +10,9 @@ from components.suguru import Suguru
 from components.solver import Solver
 from components.suguru import Group
 
-font = pygame.font.Font(size=20)
+number_font = pygame.font.Font(size=20)
+large_font = pygame.font.Font(size=50)
+small_font = pygame.font.Font(size=40)
 
 pygame.mixer.pre_init(44100, 16, 2, 4096)
 
@@ -18,7 +20,7 @@ pygame.mixer.pre_init(44100, 16, 2, 4096)
 def calc_side_length(state):
     max_n = max(state["n_rows"], state["n_cols"])
     
-    return (HEIGHT - PADDING*2) // max_n
+    return (min(HEIGHT - PADDING*2, GRID_SPACE_WIDTH - PADDING*2)) // max_n
 
 
 def suguru_location_helper(state:State, suguru:Suguru, side_length:int):
@@ -84,8 +86,37 @@ def draw(win:pygame.Surface, state:State, suguru:Suguru):
                          end_pos=(GRID_SPACE_WIDTH, HEIGHT))
         
         # controls
+                
+        y = PADDING
         
-        #! to do
+        # name
+        text = large_font.render("Size Selector", 1, BLACK)
+        win.blit(text, (GRID_SPACE_WIDTH+PADDING, y))
+        y += PADDING + text.get_height()
+        
+        # -+
+        text = small_font.render("- decrease row", 1, BLACK)
+        win.blit(text, (GRID_SPACE_WIDTH+PADDING, y))
+        y += PADDING/2 + text.get_height()
+        
+        text = small_font.render("= increase row", 1, BLACK)
+        win.blit(text, (GRID_SPACE_WIDTH+PADDING, y))
+        y += PADDING + text.get_height()
+        
+        # []
+        
+        text = small_font.render("[ decrease column", 1, BLACK)
+        win.blit(text, (GRID_SPACE_WIDTH+PADDING, y))
+        y += PADDING + text.get_height()
+        
+        text = small_font.render("] increase column", 1, BLACK)
+        win.blit(text, (GRID_SPACE_WIDTH+PADDING, y))
+        y += PADDING + text.get_height()
+        
+        text = small_font.render("SPACE to submit size", 1, BLACK)
+        win.blit(text, (GRID_SPACE_WIDTH+PADDING, y))
+        y += PADDING + text.get_height()
+        
 
     elif state == "editor":
         
@@ -129,15 +160,18 @@ def draw(win:pygame.Surface, state:State, suguru:Suguru):
         
         for cell, value in state["initial_values"].items():
             tl = state["cell_locations"][cell].topleft
-            location = (tl[0]+NUMBER_PADDING, tl[1]+NUMBER_PADDING)
-            win.blit(state["number_images"][value],location)
+            image = state["number_images"][value]
+            location = (tl[0]+NUMBER_PADDING*(image.height>(NUMBER_PADDING*2)) , 
+                        tl[1]+NUMBER_PADDING*(image.width>(NUMBER_PADDING*2)))
+            print(location)
+            win.blit(image,location)
 
         if state["solver"] is not None:
             for cell in suguru.grid.get_cell_coordinates():
                 tl = state["cell_locations"][cell].topleft
                 value = state["solver"].suguru.grid[cell].get_value()
                 if value is None:
-                    text = font.render(str(state["solver"].suguru.grid[cell].get_possible_values()), 1, RED)
+                    text = number_font.render(str(state["solver"].suguru.grid[cell].get_possible_values()), 1, RED)
                     win.blit(source=text, dest=tl)
                 else:
                     location = (tl[0]+NUMBER_PADDING, tl[1]+NUMBER_PADDING)
@@ -147,6 +181,27 @@ def draw(win:pygame.Surface, state:State, suguru:Suguru):
             pygame.draw.rect(surface=win, color=RED,
                              rect=state["cell_locations"][state["input_cell_location"]],
                              width=2)
+            
+        # controls
+        
+        y = PADDING
+    
+        # name
+        text = large_font.render("Editor", 1, BLACK)
+        win.blit(text, (GRID_SPACE_WIDTH+PADDING, y))
+        y += PADDING + text.get_height()
+        
+        text = small_font.render("click and drag for groups", 1, BLACK)
+        win.blit(text, (GRID_SPACE_WIDTH+PADDING, y))
+        y += PADDING/2 + text.get_height()
+        
+        text = small_font.render("click and type a number", 1, BLACK)
+        win.blit(text, (GRID_SPACE_WIDTH+PADDING, y))
+        y += PADDING/2 + text.get_height()
+        
+        text = small_font.render("ENTER to solve", 1, BLACK)
+        win.blit(text, (GRID_SPACE_WIDTH+PADDING, y))
+        y += PADDING/2 + text.get_height()
 
 def get_group_borders(state, cells:list[tuple[int, int]], include_edges:bool=False):
     cell_to_location = state["cell_locations"]
@@ -239,7 +294,10 @@ def handle_events(state:State, suguru:Suguru, events:list[pygame.Event]):
                     state["cell_locations"] = suguru_location_helper(
                         state=state, suguru=suguru, side_length=side_length)
                     state["initial_values"] = dict()
-                    size = (side_length-NUMBER_PADDING*2,side_length-NUMBER_PADDING*2)
+                    if side_length<=NUMBER_PADDING*2:
+                        size = (side_length, side_length)
+                    else:
+                        size = (side_length-NUMBER_PADDING*2, side_length-NUMBER_PADDING*2)
                     state["number_images"] = [
                         pygame.image.load_sized_svg(
                             os.path.join("assets", "numbers", f"{x}.svg"),
