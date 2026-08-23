@@ -6,7 +6,7 @@
 A suguru consists of a rectangular grid of cells which are all divided into groups. The number of cells in each group is that group's size.
 A suguru needs to be solved using two rules:
 - Each cell cannot have the same value as the eight adjacent cells surrounding it.
-- Each group consists of the numbers 1 to n, where n is its size -- each used exactly once.
+- Each group consists of the numbers 1 to n, where n is its size - each used exactly once.
 
 Grid
 - a 2d list of the cells
@@ -27,7 +27,7 @@ Group
 The goal is to find the solution to a well defined suguru (a suguru with
 exactly one possible solution without the need for trial and error)
 
-The core is to remove possibilities for each cell until only one possible solution is left -- which is then by default assumed to be the value of the cell.
+The core is to remove possibilities for each cell until only one possible solution is left - which is then by default assumed to be the value of the cell.
 If the solver attempts to remove that last possible value, then we can assume the suguru is not well defined (unsolvable)
 
 We solve it by doing the following phases
@@ -100,4 +100,9 @@ CHANGE SCREEN to editor
 - size_selector
 
 - editor
-    
+
+
+# Usage
+
+- Once downloaded, install the packages in requirements.txt
+- Run main.py
