@@ -46,11 +46,14 @@ class Solver:
                     
             if contains:
                 return False
+        
+        return True
     
     def ensure_solved(self):
         filled = self.ensure_filled()
         neighbours = self.ensure_neighbours()
         groups = self.ensure_groups()
+        print(filled, neighbours, groups)
         return filled and neighbours and groups
     
     def solve(self):
@@ -64,8 +67,14 @@ class Solver:
             updated_suguru = False
             print(self.suguru)
             for cell in to_check:
-                updated_suguru = self.solve_cell(cell) or updated_suguru
-
+                try:
+                    updated_suguru = self.solve_cell(cell) or updated_suguru
+                except ValueError as e:
+                    print(e)
+                    print("This is not solvable")
+                    checking = False
+                    break
+                
             print(updated_suguru)
             print(self.suguru)
             to_check = all_cells.difference(self.solved_cells)
