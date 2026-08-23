@@ -14,33 +14,37 @@ Cell
     - contains a list of potential values
 
 Group
-    - stores the indexes of the cells in its group
+    - stores the coordinates of the cells in its group
     - is the main area of processing for the solver
 
 ## Solver
 
-Phase 1: adjacent cell exclusion
-    - for each filled cell, remove that value from all adjacent cells
+The goal is to find the solution to a well defined suguru (a suguru with
+exactly one possible solution without the need for trial and error)
+
+We solve it by doing the following phases
+
+Phase 1: cell value
+    - For each cell that has a known value, we remove that value from the
+    possible values of adjacent cells (these adjacent cells are said to be in
+    its 'region of influence')
+    - then remove that value from the possible values of cells in the same
+    group
 
 Phase 2: group exclusion
-    - for each filled cell in the group, remove that value from all the cells
-    in the group
-    - if only one cell in the group can take a value, it takes it
+    - for each group in the suguru, we see if one cell contains the only
+    possible location for a value, and so fill it with that value
+    (now we run phase 1 on this cell)
+    - then we check, for each possible value all the cells in the group can
+    take, if every cell in the group which could contain that value has a cell
+    in their regions of influence, remove that value from from that cell's
+    possible values
 
-Phase 3: group multi-cell exclusion
-    - find all the empty cells in the group
-    - check if they all have at least one overlapping cell in their regions
-    of influence (if not skip this phase)
-    - for each possible remaining values in the group, check if the cells
-    containing those values have an overlapping cell
-    - remove that value from this cell
+to start we just run phase 1 on the initial values of the suguru, and when the 
+recursion ends, we run the group exclusion phase. If the suguru is now solved
+(all the cells are filled) then we are done. Otherwise, we run phase 1 on cells
+that 
 
-Trial and Error:
-    - sometimes the deterministic solver is unable to find a solution and we need to resort to a trial and error method
-    - we will fill in a value (one with minimal choice) then iterate through the previously described phases until it is either solved, incomplete, or paradoxical
-        - if it fails, we guess another cell
-        - if it creates a paradox, we forget the previous guess we made
-        
 
 
 Optimisations?
