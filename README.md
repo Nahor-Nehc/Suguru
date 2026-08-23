@@ -4,18 +4,18 @@
 ## Puzzle Structure
 
 Grid
-    - a 2d list of the cells
+- a 2d list of the cells
 
 Row
-    - is returned when the Grid is indexed
+- is returned when the Grid is indexed
 
 Cell
-    - is returned when the Row is indexed
-    - contains a list of potential values
+- is returned when the Row is indexed
+- contains a list of potential values
 
 Group
-    - stores the coordinates of the cells in its group
-    - is the main area of processing for the solver
+ - stores the coordinates of the cells in its group
+- is the main area of processing for the solver
 
 ## Solver
 
@@ -28,17 +28,17 @@ If the solver attempts to remove that last possible value, then we can assume th
 We solve it by doing the following phases
 
 Phase 1: cell value
-    - For each cell that has a known value, we remove that value from the
+ - For each cell that has a known value, we remove that value from the
     possible values of adjacent cells (these adjacent cells are said to be in
     its 'region of influence')
-    - then remove that value from the possible values of cells in the same
+- then remove that value from the possible values of cells in the same
     group
 
 Phase 2: group exclusion
-    - for each group in the suguru, we see if one cell contains the only
+- for each group in the suguru, we see if one cell contains the only
     possible location for a value, and so fill it with that value
     (now we run phase 1 on this cell)
-    - then we check, for each possible value all the cells in the group can
+- then we check, for each possible value all the cells in the group can
     take, if every cell in the group which could contain that value has a cell
     in their regions of influence, remove that value from from that cell's
     possible values
@@ -51,14 +51,14 @@ that
 
 
 Optimisations?
-    - have a buffer of changed cells (and groups) so we dont have to check
+- have a buffer of changed cells (and groups) so we dont have to check
     every cell again individually
 
 
 Baby solver ideas:
-    - find largest group size, then fill every cell with a number smaller than
+- find largest group size, then fill every cell with a number smaller than
     that, then check the grid
-    - get every permutation of values in each group and go through all of them
+- get every permutation of values in each group and go through all of them
     then check the grid
 
 
@@ -66,20 +66,17 @@ Baby solver ideas:
 ### GUI suguru input
 
 User steps:
-    - select size of grid
-    - create groups
-        - click and drag on a series of cells (use 'if mousedown' thing on mousemove event)
-        - if you click on a cell already assigned a group, delete previous group
-    - create size buffer so you need to move the mouse a certain threshold before it registers that user is attempting to draw a group instead of inputting a cell value
-    - click on a cell to input cell values (use mouseup event only if not dragging)
-
-    - hit 'solve'
-        - show if there are some cells not in a group
-        - mode to show solve one step at a time for learning purposes
-    
-    - save suguru boards (in unsolved state)
-
-    - load suguru boards
+- select size of grid
+- create groups
+    - click and drag on a series of cells (use 'if mousedown' thing on mousemove event)
+    - if you click on a cell already assigned a group, delete previous group
+- create size buffer so you need to move the mouse a certain threshold before it registers that user is attempting to draw a group instead of inputting a cell value
+- click on a cell to input cell values (use mouseup event only if not dragging)
+- hit 'solve'
+    - show if there are some cells not in a group
+    - mode to show solve one step at a time for learning purposes
+- save suguru boards (in unsolved state)
+- load suguru boards
 
 
 ### Things to display
