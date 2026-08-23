@@ -51,7 +51,7 @@ Phase 2: group exclusion
 to start we just run phase 1 on the initial values of the suguru, and when the 
 recursion ends, we run the group exclusion phase. If the suguru is now solved
 (all the cells are filled) then we are done. Otherwise, we run phase 1 on cells
-that 
+that were solved in phase 2(repeat)
 
 
 
