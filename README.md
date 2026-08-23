@@ -3,6 +3,11 @@
 
 ## Puzzle Structure
 
+A suguru consists of a rectangular grid of cells which are all divided into groups. The number of cells in each group is that group's size.
+A suguru needs to be solved using two rules:
+- Each cell cannot have the same value as the eight adjacent cells surrounding it.
+- Each group consists of the numbers 1 to n, where n is its size -- each used exactly once.
+
 Grid
 - a 2d list of the cells
 
