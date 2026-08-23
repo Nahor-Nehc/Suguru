@@ -64,7 +64,7 @@ class Solver:
         to_check = self.initial_values.keys()
 
         while checking:
-            updated_suguru = False
+            updated_suguru = False # technically redundant (checking) but more readable
             print(self.suguru)
             for cell in to_check:
                 try:
@@ -77,6 +77,8 @@ class Solver:
                 
             print(updated_suguru)
             print(self.suguru)
+            
+            # get all the unsolved cells
             to_check = all_cells.difference(self.solved_cells)
                 
             for group in self.suguru.get_groups():
@@ -85,6 +87,7 @@ class Solver:
                     print(group, "was updated")
             print(updated_suguru)
             
+            # if we did not change the suguru, we are done checking
             if not updated_suguru:
                 checking = False
                 
@@ -93,7 +96,6 @@ class Solver:
         else:
             print(self.suguru)
             print("Solve incomplete: not enough information")
-
             
     
     def solve_cell(self, cell:tuple[int, int]):
@@ -118,6 +120,8 @@ class Solver:
         influenced_cells = self.suguru.grid.get_cell_roi(cell=cell)
         for ic in influenced_cells:
             print("\t", ic, self.suguru.grid[cell].get_value())
+            
+            # remove the value of 'cell' from adjacent cells
             if self.suguru.grid[ic].is_empty():
                 before = self.suguru.grid[ic].get_possible_values()[:]
                 print("\t\t", before, end = "")
@@ -128,6 +132,8 @@ class Solver:
                     updated_suguru = True
                 
                 print(after, before ==after, "="*60 if ic==cell_to_check else "")
+                
+                # if 'ic' has now been filled, propagate phase 1
                 if not self.suguru.grid[ic].is_empty():
                     print("adjacency:", ic, "with value", self.suguru.grid[ic])
                     self.solve_cell(ic)
@@ -428,5 +434,6 @@ def test5():
     # 3 | 5 | 4 | 5 | 1 | 5 | 3
     # 1 | 2 | 1 | 3 | 4 | 2 | 1
 
-test5()
+if __name__ == "__main__":
+    test5()
 
